@@ -1,7 +1,7 @@
 name: build test
 
 on:
-  workflow_dispacth
+  workflow_dispach:
 
 
 jobs:
