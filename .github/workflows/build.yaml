@@ -1,11 +1,11 @@
-name: build test
+name: "build test"
 
 on:
   workflow_dispatch:
 
 
 jobs:
-  maven test:
+  maven_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
