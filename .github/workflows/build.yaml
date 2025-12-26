@@ -7,7 +7,7 @@ on:
 jobs:
   maven_test:
     runs-on: self-hosted
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: nexus-releases 
+          server-id: nexus-snapshots # ID from the settings.xml to match 
           server-username: MAVEN_USERNAME # Env var name we will map below
           server-password: MAVEN_PASSWORD # Env var name we will map below
 
