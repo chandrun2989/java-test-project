@@ -12,10 +12,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Snyk CLI
-        uses: snyk/actions/setup@master
-        with:
-          snyk-version: latest
+      - name: Run Snyk to check for configuration vulnerabilities
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          set +e
+          snyk iac test ./terraform --severity-threshold=high > snyk_report.txt 2>&1
+          EXIT_CODE=$?
+          set -e
+          cat snyk_report.txt
+          echo "### Snyk IaC Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Click to expand scan results</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat snyk_report.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          if [ $EXIT_CODE -ne 0 ]; then
+            exit $EXIT_CODE
+          fi
       
       - name: Set up JDK 17
         uses: actions/setup-java@v4
