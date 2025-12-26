@@ -39,7 +39,7 @@ jobs:
           # snyk code test --sarif-file-output=snyk-code.sarif || true
         
       - name: Upload SARIF to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-deps.sarif
         # If you produced multiple SARIF files, run this step multiple times or concatenate them.
