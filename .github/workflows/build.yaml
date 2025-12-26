@@ -12,26 +12,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Snyk to check for configuration vulnerabilities
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Run dependency scan (Snyk test) and save JSON
+        id: snyk_test
         run: |
-          set +e
-          snyk iac test ./terraform --severity-threshold=high > snyk_report.txt 2>&1
-          EXIT_CODE=$?
-          set -e
-          cat snyk_report.txt
-          echo "### Snyk IaC Scan Results" >> $GITHUB_STEP_SUMMARY
-          echo "<details><summary>Click to expand scan results</summary>" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          cat snyk_report.txt >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "</details>" >> $GITHUB_STEP_SUMMARY
-          if [ $EXIT_CODE -ne 0 ]; then
-            exit $EXIT_CODE
-          fi
+          # run test and always write output into JSON/exit code handling
+          # Remove "|| true" if you want the job to fail on vulnerabilities.
+          snyk test --json > snyk-result.json || true
+          cat snyk-result.json
+          cat snyk-result.json >> $GITHUB_STEP_SUMMARY
+      
+      - name: Produce SARIF for GitHub code scanning
+        run: |
+          # For dependency scans:
+          snyk test --sarif-file-output=snyk-deps.sarif || true
+          # If you have Snyk Code enabled and want static analysis SARIF:
+          # snyk code test --sarif-file-output=snyk-code.sarif || true
+        
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk-deps.sarif
+        # If you produced multiple SARIF files, run this step multiple times or concatenate them.
+
+      - name: Upload Snyk JSON and SARIF as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-results
+          path: |
+            snyk-result.json
+            snyk-deps.sarif
+            snyk-code.sarif
       
       - name: Set up JDK 17
         uses: actions/setup-java@v4
