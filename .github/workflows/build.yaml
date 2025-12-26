@@ -12,6 +12,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Authenticate Snyk CLI
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "SNYK_TOKEN is not set - aborting"
+            exit 1
+          fi
+          snyk auth "$SNYK_TOKEN"
+
       - name: Run dependency scan (Snyk test) and save JSON
         id: snyk_test
         run: |
