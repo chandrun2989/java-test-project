@@ -2,6 +2,11 @@ name: "build test"
 
 on:
   workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'New version to set (if not provided, defaults to 1.0.0 or 1.0.0-SNAPSHOT based on branch)'
+        required: false
+        default: ''
 
 permissions:
   id-token: write
@@ -16,6 +21,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: get maven version
+        id: version
+        run: |
+          BASE= "${{ github.event.inputs.new_version || '1.0.0' }}"
+          if [ "${{ github.ref}}" = "refs/heads/main" ]; then
+            echo "value=$BASE" >> $GITHUB_OUTPUT
+          else
+            echo "value=$BASE-SNAPSHOT" >> $GITHUB_OUTPUT
+          fi
+      - name: Set up Maven version
+        run: mvn -B -ntp versions:set -DnewVersion="${{ steps.version.outputs.value }}" -DprocessAllModules=true && mvn -B -ntp versions:commit 
+      
       - name: Authenticate Snyk CLI
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
