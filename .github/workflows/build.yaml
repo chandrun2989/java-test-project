@@ -24,7 +24,7 @@ jobs:
       - name: get maven version
         id: version
         run: |
-          BASE= "${{ github.event.inputs.new_version || '1.0.0' }}"
+          BASE="${{ github.event.inputs.new_version || '1.0.0' }}"
           if [ "${{ github.ref}}" = "refs/heads/main" ]; then
             echo "value=$BASE" >> $GITHUB_OUTPUT
           else
