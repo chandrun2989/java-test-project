@@ -35,7 +35,7 @@ jobs:
       
       - name: Authenticate Snyk CLI
         id: fetch_snyk_token
-        uses: chandrun2989/aws_ec2-test/.github/actions/secrets
+        uses: chandrun2989/aws_ec2-test/.github/actions/secrets@main
 
       - name: Run dependency scan (Snyk test) and save JSON
         id: snyk_test
