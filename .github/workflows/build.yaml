@@ -7,6 +7,9 @@ on:
         description: 'New version to set (if not provided, defaults to 1.0.0 or 1.0.0-SNAPSHOT based on branch)'
         required: false
         default: ''
+    
+env:
+  AWS_REGION: ap-south-1
 
 permissions:
   id-token: write
@@ -20,6 +23,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::872154182572:role/GitHubActions-Terraform-Role
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: get maven version
         id: version
@@ -35,7 +46,7 @@ jobs:
       
       - name: Authenticate Snyk CLI
         id: fetch_snyk_token
-        uses: chandrun2989/aws_ec2-test/.github/actions/secrets@main
+        uses: chandrun2989/aws_ec2-test/.github/actions/snyk@main
 
       - name: Run dependency scan (Snyk test) and save JSON
         id: snyk_test
