@@ -1,0 +1,75 @@
+name: fetch snyk token and Authenticate the Run
+description: Fetch Snyk token from AWS Secrets Manager and authenticate Snyk CLI for vulnerability scanning.
+
+inputs:
+  secret:
+    description: "The AWS Secrets Manager secret ID where the Snyk token is stored."
+    required: false
+  
+  code_base:
+    description: "The code base to scan (e.g., 'java', 'terraform')."
+    required: false
+
+  upload_artifacts:
+    description: "Whether to upload Snyk scan results as workflow artifacts."
+    required: false
+   
+
+outputs:
+  token:
+    description: "The Snyk token fetched from Secrets Manager."
+    value: ${{ steps.fetch_snyk.outputs.token }}
+runs:
+  using: "composite"
+  steps:
+    - name: fetch Secrets Manager secret
+      uses: aws-actions/aws-secretsmanager-get-secrets@v2
+      with:
+        secret-ids: |
+          {{ inputs.secret }}
+        parse-json-secrets: true  
+
+    - name: Authenticate Snyk CLI
+      env:
+        SNYK_TOKEN: ${{ env.ACTION_SECRETS_SNYK_TOKEN}}
+      shell: bash
+      run: |
+        snyk auth "$SNYK_TOKEN"
+    
+    - name: Run dependency scan (Snyk test)
+      shell: bash
+      run: |
+        # run test and always write output into JSON/exit code handling
+        # Remove "|| true" if you want the job to fail on vulnerabilities.
+        if [ -n "{{ inputs.code_base }}" ]; then
+          snyk test --json --package-manager={{ inputs.code_base }} > snyk-result.json || true
+        else
+          snyk iac test ./terraform --severity-threshold=high > snyk_report.txt 2>&1
+        fi
+        cat snyk-result.json
+        cat snyk-result.json >> $GITHUB_STEP_SUMMARY
+      
+    - name: Produce SARIF for GitHub code scanning
+      if: always()
+      shell: bash
+      run: |
+        # For dependency scans:
+        snyk test --sarif-file-output=snyk-deps.sarif || true
+        # If you have Snyk Code enabled and want static analysis SARIF:
+        # snyk code test --sarif-file-output=snyk-code.sarif || true
+        
+    - name: Upload SARIF to GitHub Code Scanning
+      if: ${{ inputs.upload_artifacts == 'true' }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: snyk-deps.sarif
+      # If you produced multiple SARIF files, run this step multiple times or concatenate them.
+
+    - name: Upload Snyk JSON and SARIF as workflow artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: snyk-results
+        path: |
+          snyk-result.json
+          snyk-deps.sarif
+          snyk-code.sarif
