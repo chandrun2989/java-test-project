@@ -26,7 +26,7 @@ runs:
       uses: aws-actions/aws-secretsmanager-get-secrets@v2
       with:
         secret-ids: |
-          {{ inputs.secret }}
+          ${{ inputs.secret }}
         parse-json-secrets: true  
 
     - name: Authenticate Snyk CLI
@@ -41,8 +41,8 @@ runs:
       run: |
         # run test and always write output into JSON/exit code handling
         # Remove "|| true" if you want the job to fail on vulnerabilities.
-        if [ -n "{{ inputs.code_base }}" ]; then
-          snyk test --json --package-manager={{ inputs.code_base }} > snyk-result.json || true
+        if ["${{ inputs.code_base == 'java' }}" ]; then
+          snyk test --json --package-manager=${{ inputs.code_base }} > snyk-result.json || true
         else
           snyk iac test ./terraform --severity-threshold=high > snyk_report.txt 2>&1
         fi
