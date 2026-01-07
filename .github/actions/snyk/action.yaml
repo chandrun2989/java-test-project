@@ -41,7 +41,7 @@ runs:
       run: |
         # run test and always write output into JSON/exit code handling
         # Remove "|| true" if you want the job to fail on vulnerabilities.
-        if ["${{ inputs.code_base == 'java' }}" ]; then
+        if ["${{ inputs.code_base }}" == "java" ]; then
           snyk test --json --package-manager=${{ inputs.code_base }} > snyk-result.json || true
         else
           snyk iac test ./terraform --severity-threshold=high > snyk_report.txt 2>&1
