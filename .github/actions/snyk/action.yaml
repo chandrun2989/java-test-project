@@ -49,7 +49,7 @@ runs:
         # Remove "|| true" if you want the job to fail on vulnerabilities.
 
         snyk test ${{ inputs.path }} --json --severity-threshold=${{ inputs.severity_threshold }} > snyk-report.json || true
-        cat snyk-result.json
+        cat snyk-report.json
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Severity | Package | Version | Issue |" >> $GITHUB_STEP_SUMMARY
         echo "|----------|---------|---------|-------|" >> $GITHUB_STEP_SUMMARY
