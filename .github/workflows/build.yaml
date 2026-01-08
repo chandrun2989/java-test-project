@@ -7,18 +7,13 @@ on:
         description: 'New version to set (if not provided, defaults to 1.0.0 or 1.0.0-SNAPSHOT based on branch)'
         required: false
         default: ''
+
       secret:
         description: 'AWS Secrets Manager secret ID for Snyk token'
         required: false
         type: string
         default: ''
-      code_base:
-        description: 'Code base to build (if not provided, defaults to main)'
-        required: false
-        type: choice
-        options:
-          - terraform
-          - java
+
       uploadartifacts:
         description: 'Upload build artifacts'
         required: false
@@ -65,7 +60,8 @@ jobs:
         uses: ./.github/actions/snyk
         with:
           secret: ${{ github.event.inputs.secret }}
-          code_base: ${{ github.event.inputs.code_base }}
+          path: '.'
+          severity_threshold: 'low'
           upload_artifacts: ${{ github.event.inputs.uploadartifacts }}
       
       # - name: Set up JDK 17

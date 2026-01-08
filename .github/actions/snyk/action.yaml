@@ -6,9 +6,15 @@ inputs:
     description: "The AWS Secrets Manager secret ID where the Snyk token is stored."
     required: false
   
-  code_base:
-    description: "The code base to scan (e.g., 'java', 'terraform')."
+  path:
+    description: "The path to run the snyk scan ."
     required: false
+    default: '.'
+  
+  severity_threshold:
+    description: "The severity threshold for reporting vulnerabilities (e.g., low, medium, high, critical)."
+    required: false
+    default: "low"
 
   upload_artifacts:
     description: "Whether to upload Snyk scan results as workflow artifacts."
@@ -41,14 +47,14 @@ runs:
       run: |
         # run test and always write output into JSON/exit code handling
         # Remove "|| true" if you want the job to fail on vulnerabilities.
-        if [ "${{ inputs.code_base }}" == "java" ]; then
-          snyk test --json  > snyk-result.json || true
-        else
-          snyk iac test ./terraform --severity-threshold=high > snyk-result.json 2>&1
-        fi
+
+        snyk test ${{ inputs.path }} --json --severity-threshold=${{ inputs.severity_threshold }} > snyk-report.json || true
         cat snyk-result.json
-        cat snyk-result.json >> $GITHUB_STEP_SUMMARY
-      
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Severity | Package | Version | Issue |" >> $GITHUB_STEP_SUMMARY
+        echo "|----------|---------|---------|-------|" >> $GITHUB_STEP_SUMMARY
+        jq -r '.vulnerabilities[] | "| " + .severity + " | " + .packageName + " | " + .version + " |"' snyk-report.json >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
     - name: Produce SARIF for GitHub code scanning
       if: always()
       shell: bash
@@ -66,6 +72,7 @@ runs:
       # If you produced multiple SARIF files, run this step multiple times or concatenate them.
 
     - name: Upload Snyk JSON and SARIF as workflow artifacts
+      if: ${{ inputs.upload_artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: snyk-results
