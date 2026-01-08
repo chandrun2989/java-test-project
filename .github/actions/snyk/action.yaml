@@ -44,7 +44,7 @@ runs:
         if [ "${{ inputs.code_base }}" == "java" ]; then
           snyk test --json  > snyk-result.json || true
         else
-          snyk iac test ./terraform --severity-threshold=high > snyk_report.txt 2>&1
+          snyk iac test ./terraform --severity-threshold=high > snyk-result.json 2>&1
         fi
         cat snyk-result.json
         cat snyk-result.json >> $GITHUB_STEP_SUMMARY
