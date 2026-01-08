@@ -53,9 +53,8 @@ runs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Severity | Package |" >> $GITHUB_STEP_SUMMARY
         echo "|----------|---------|" >> $GITHUB_STEP_SUMMARY
-        jq -r '.vulnerabilities[] | "| \(.severity) | \(.packageName) |"' snyk_report.json >> $GITHUB_STEP_SUMMARY
-        jq -r '.licensesPolicy.orgLicenseRules[] | "\(.licenseType): \(.severity)"' snyk_report.json >> $GITHUB_STEP_SUMMARY
-
+        # jq -r '.vulnerabilities[] | "| \(.severity) | \(.packageName) |"' snyk-report.json >> $GITHUB_STEP_SUMMARY
+        jq -r '.licensesPolicy.orgLicenseRules[] | "| \(.severity) | \(.licenseType) |"' snyk-report.json >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
     - name: Produce SARIF for GitHub code scanning
       if: always()
