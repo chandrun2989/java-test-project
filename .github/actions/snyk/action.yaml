@@ -51,10 +51,10 @@ runs:
         snyk test ${{ inputs.path }} --json --severity-threshold=${{ inputs.severity_threshold }} > snyk-report.json || true
         cat snyk-report.json
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "| Severity | Package |" >> $GITHUB_STEP_SUMMARY
+        echo "| Package | Severity |" >> $GITHUB_STEP_SUMMARY
         echo "|----------|---------|" >> $GITHUB_STEP_SUMMARY
         # jq -r '.vulnerabilities[] | "| \(.severity) | \(.packageName) |"' snyk-report.json >> $GITHUB_STEP_SUMMARY
-        jq -r '.licensesPolicy.orgLicenseRules[] | "| \(.severity) | \(.licenseType) |"' snyk-report.json >> $GITHUB_STEP_SUMMARY
+        jq -r '.licensesPolicy.orgLicenseRules[] | "| \(.licenseType) | \(.severity) |"' snyk-report.json >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
     - name: Produce SARIF for GitHub code scanning
       if: always()
