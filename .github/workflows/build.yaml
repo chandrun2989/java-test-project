@@ -56,6 +56,13 @@ jobs:
       - name: Set up Maven version
         run: mvn -B -ntp versions:set -DnewVersion="${{ steps.version.outputs.value }}" -DprocessAllModules=true && mvn -B -ntp versions:commit 
 
+      - name: fetch Secrets Manager secret
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            ${{ inputs.secret }}
+          parse-json-secrets: true  
+          
       - name: Authenticate and Run dependency scan (Snyk test) and save JSON
         uses: ./.github/actions/snyk
         with:

@@ -28,13 +28,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: fetch Secrets Manager secret
-      uses: aws-actions/aws-secretsmanager-get-secrets@v2
-      with:
-        secret-ids: |
-          ${{ inputs.secret }}
-        parse-json-secrets: true  
-
     - name: Authenticate Snyk CLI
       env:
         SNYK_TOKEN: ${{ env.ACTION_SECRETS_SNYK_TOKEN}}
