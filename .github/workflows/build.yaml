@@ -62,6 +62,10 @@ jobs:
           secret-ids: |
             ${{ inputs.secret }}
           parse-json-secrets: true  
+
+      - name: build docker image
+        run: |
+          docker build -t docker/Dockerfile .
           
       - name: Authenticate and Run dependency scan (Snyk test) and save JSON
         uses: ./.github/actions/snyk
