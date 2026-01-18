@@ -65,8 +65,8 @@ jobs:
 
       - name: build docker image
         run: |
-          docker build -t docker/Dockerfile .
-          
+          docker build -f docker/Dockerfile .
+
       - name: Authenticate and Run dependency scan (Snyk test) and save JSON
         uses: ./.github/actions/snyk
         with:
