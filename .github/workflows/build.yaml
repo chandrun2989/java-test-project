@@ -2,10 +2,31 @@ name: "build test"
 
 on:
   workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'New version to set (if not provided, defaults to 1.0.0 or 1.0.0-SNAPSHOT based on branch)'
+        required: false
+        default: ''
+
+      secret:
+        description: 'AWS Secrets Manager secret ID for Snyk token'
+        required: false
+        type: string
+        default: ''
+
+      uploadartifacts:
+        description: 'Upload build artifacts'
+        required: false
+        type: boolean
+        default: false
+    
+env:
+  AWS_REGION: ap-south-1
 
 permissions:
   id-token: write
   contents: read
+  security-events: write
 
 jobs:
   maven_test:
@@ -15,59 +36,57 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Authenticate Snyk CLI
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::872154182572:role/GitHubActions-Terraform-Role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: get maven version
+        id: version
         run: |
-          if [ -z "$SNYK_TOKEN" ]; then
-            echo "SNYK_TOKEN is not set - aborting"
-            exit 1
+          BASE="${{ github.event.inputs.new_version || '1.0.0' }}"
+          if [ "${{ github.ref}}" = "refs/heads/main" ]; then
+            echo "value=$BASE" >> $GITHUB_OUTPUT
+          else
+            echo "value=$BASE-SNAPSHOT" >> $GITHUB_OUTPUT
           fi
-          snyk auth "$SNYK_TOKEN"
+      - name: Set up Maven version
+        run: mvn -B -ntp versions:set -DnewVersion="${{ steps.version.outputs.value }}" -DprocessAllModules=true && mvn -B -ntp versions:commit 
 
-      - name: Run dependency scan (Snyk test) and save JSON
-        id: snyk_test
+      - name: fetch Secrets Manager secret
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            ${{ inputs.secret }}
+          parse-json-secrets: true  
+
+      - name: build docker image
         run: |
-          # run test and always write output into JSON/exit code handling
-          # Remove "|| true" if you want the job to fail on vulnerabilities.
-          snyk test --json > snyk-result.json || true
-          cat snyk-result.json
-          cat snyk-result.json >> $GITHUB_STEP_SUMMARY
-      
-      - name: Produce SARIF for GitHub code scanning
-        run: |
-          # For dependency scans:
-          snyk test --sarif-file-output=snyk-deps.sarif || true
-          # If you have Snyk Code enabled and want static analysis SARIF:
-          # snyk code test --sarif-file-output=snyk-code.sarif || true
-        
-      - name: Upload SARIF to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: snyk-deps.sarif
-        # If you produced multiple SARIF files, run this step multiple times or concatenate them.
+          docker build -f docker/Dockerfile .
 
-      - name: Upload Snyk JSON and SARIF as workflow artifacts
-        uses: actions/upload-artifact@v4
+      - name: Authenticate and Run dependency scan (Snyk test) and save JSON
+        uses: ./.github/actions/snyk
         with:
-          name: snyk-results
-          path: |
-            snyk-result.json
-            snyk-deps.sarif
-            snyk-code.sarif
+          secret: ${{ github.event.inputs.secret }}
+          path: '.'
+          severity_threshold: 'low'
+          upload_artifacts: ${{ github.event.inputs.uploadartifacts }}
       
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          server-id: nexus-snapshots # ID from the settings.xml to match 
-          server-username: MAVEN_USERNAME # Env var name we will map below
-          server-password: MAVEN_PASSWORD # Env var name we will map below
+      # - name: Set up JDK 17
+      #   uses: actions/setup-java@v4
+      #   with:
+      #     java-version: '17'
+      #     distribution: 'temurin'
+      #     server-id: nexus-snapshots # ID from the settings.xml to match 
+      #     server-username: MAVEN_USERNAME # Env var name we will map below
+      #     server-password: MAVEN_PASSWORD # Env var name we will map below
 
       
-      - name: Publish to Nexus
-        run: mvn deploy -DskipTests
-        env:
-          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      # - name: Publish to Nexus
+      #   run: mvn deploy -DskipTests
+      #   env:
+      #     MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      #     MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}

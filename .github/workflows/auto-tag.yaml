@@ -1,0 +1,14 @@
+name: auto version on PR merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  call-auto-tag:
+    uses: chandrun2989/aws_ec2-test/.github/workflows/auto-ver-tag.yaml@main
+    with:
+      secrets: inherit
+      target_branch: "main"
+      version_file: "VERSION"
+  
