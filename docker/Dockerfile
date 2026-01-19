@@ -1,4 +1,5 @@
 # infrastructure/Dockerfile
+# Dockerfile for a GitHub Actions Runner with Java and Snyk CLI
 FROM ubuntu:22.04
 
 # Prevent interactive prompts during package installation
