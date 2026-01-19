@@ -10,4 +10,5 @@ jobs:
     with:
       target_branch: "main"
       version_file: "VERSION"
+      changelog_file: "CHANGELOG.md"
   
