@@ -1,3 +1,10 @@
+## v1.0.3 (2026-01-19)
+
+- Merge pull request #6 from chandrun2989/feature/snyk_new (39fe557)
+- testing version 3 (b4144dc)
+- testing version 2 (ee7a1ab)
+- testing version 1 (610fed5)
+
 ## v1.0.2 (2026-01-19)
 
 - Merge pull request #5 from chandrun2989/feature/snyk_new (01ef12c)
