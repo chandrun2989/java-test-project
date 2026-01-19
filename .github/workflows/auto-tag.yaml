@@ -5,7 +5,7 @@ on:
     types: [closed]
 
 jobs:
-  call-auto-tag:
+  call-auto-tag:  # This is a custom job name
     uses: chandrun2989/aws_ec2-test/.github/workflows/auto-ver-tag.yaml@main
     with:
       target_branch: "main"
