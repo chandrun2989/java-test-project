@@ -1,3 +1,15 @@
+## v1.0.4  (PR #7) (2026-01-20)
+
+**test title**
+
+**PR description**
+
+test description
+
+**Commits in this PR**
+- Merge pull request #7 from chandrun2989/feature/snyk_new (8406b05)
+- test auto tag changes (b87596f)
+
 ## v1.0.3 (2026-01-19)
 
 - Merge pull request #6 from chandrun2989/feature/snyk_new (39fe557)
