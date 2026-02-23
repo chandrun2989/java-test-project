@@ -57,6 +57,6 @@ jobs:
           Write-Output $logContent
 
           # Output the Scan Result for visibility in Actions
-          Write-Output "Scan Result: $scanResult"
+          # Write-Output "Scan Result: $scanResult"
 
           exit $scanResult
