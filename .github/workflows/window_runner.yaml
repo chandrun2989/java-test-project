@@ -1,0 +1,44 @@
+name: windows test runner
+
+on:
+  push:
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
+jobs:
+  download_scan:
+    runs-on: windows-latest
+    steps:
+      - name: download scanner
+        run: |
+          curl.exe -L -o npp_installer.exe "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.5.7/npp.8.5.7.Installer.x64.exe"
+          dir
+        shell: powershell
+      
+      - name: defender scanner
+        shell: powershell
+        run: |
+          $latest = Get-ChildItem "C:\ProgramData\Microsoft\Windows Defender\Platform\" |
+                    Sort-Object Name -Descending |
+                    Select-Object -First 1
+          $mpcmd = "$($latest.FullName)\mpcmdrun.exe"
+
+          # Prepare scan directory
+          $scanDir = "C:\scan"
+          New-Item -ItemType Directory -Path $scanDir -Force | Out-Null
+
+          # Copy the installer to the scan directory
+          Copy-Item "./npp_installer.exe" "$scanDir\npp_installer.exe" -Force
+
+          # scan
+          # Start-Sleep -Seconds 10 # wait for the file to be fully copied
+          & $mpcmd -Scan -ScanType 3 -File "$scanDir\npp_installer.exe" 
+
+      - name: show defender logs
+        shell: powershell
+        run: |
+          Get-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log"
+
