@@ -35,18 +35,20 @@ jobs:
 
           $defenderVersion = (Get-Item $mpcmd).VersionInfo.FileVersion
 
-          # Add details to the logs
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan started: $startTime"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "File scanned: $scanDir\npp_installer.exe"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Defender version: $defenderVersion"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan ended: $endTime"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan result: $scanResult"
-
           # scan
           $startTime = Get-Date
           & $mpcmd -Scan -ScanType 3 -File "$scanDir\npp_installer.exe" -DisableRemediation -SignatureUpdate -mmpc
           $endTime = Get-Date
           $scanResult = $LASTEXITCODE
+
+          # Add details to the logs
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan started: $startTime"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "File scanned: $scanDir\npp_installer.exe"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Defender version: $defenderVersion"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan result: $scanResult"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan ended: $endTime"
+          
+
 
       - name: show defender logs
         shell: powershell
