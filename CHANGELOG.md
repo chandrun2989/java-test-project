@@ -1,3 +1,19 @@
+## v1.0.5  (PR #8) (2026-02-23)
+
+**Windows poc**
+
+**PR description**
+
+
+
+**Commits in this PR**
+- Merge pull request #8 from chandrun2989/windows_poc (b3a2245)
+- testing windows runner (1f91e38)
+- testing windows runner (3b1b78f)
+- testing windows runner (fedd793)
+- testing windows runner (a1ec3b9)
+- testing windows runner (6aec2c0)
+
 ## v1.0.4  (PR #7) (2026-01-20)
 
 **test title**
