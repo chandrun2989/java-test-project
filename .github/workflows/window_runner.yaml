@@ -41,22 +41,20 @@ jobs:
           $endTime = Get-Date
           $scanResult = $LASTEXITCODE
 
-          # Add details to the logs
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan started: $startTime"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "File scanned: $scanDir\npp_installer.exe"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Defender version: $defenderVersion"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan result: $scanResult"
-          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan ended: $endTime"
-          
-
+          # Create a separate summary file with only the details you want
+          $summaryFile = "C:\Users\runneradmin\AppData\Local\Temp\ScanSummary.log"
+          Add-Content $summaryFile "Scan started: $startTime"
+          Add-Content $summaryFile "File scanned: $scanDir\npp_installer.exe"
+          Add-Content $summaryFile "Defender version: $defenderVersion"
+          Add-Content $summaryFile "Scan result: $scanResult"
+          Add-Content $summaryFile "Scan ended: $endTime"
 
       - name: show defender logs
         shell: powershell
         run: |
-          $logContent = Get-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log"
-          Write-Output $logContent
-
-          # Output the Scan Result for visibility in Actions
-          Write-Output "Scan Result: $scanResult"
-
-          exit $scanResult
+          $summaryContent = Get-Content "C:\Users\runneradmin\AppData\Local\Temp\ScanSummary.log"
+          Write-Output $summaryContent
+          
+          # Get the scan result from the summary
+          $scanResult = (Get-Content "C:\Users\runneradmin\AppData\Local\Temp\ScanSummary.log" | Select-String "Scan result: (\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+          exit [int]$scanResult
