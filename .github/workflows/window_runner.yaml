@@ -33,12 +33,29 @@ jobs:
           # Copy the installer to the scan directory
           Copy-Item "./npp_installer.exe" "$scanDir\npp_installer.exe" -Force
 
+          $defenderVersion = (Get-Item $mpcmd).VersionInfo.FileVersion
+
           # scan
-          # Start-Sleep -Seconds 10 # wait for the file to be fully copied
-          & $mpcmd -Scan -ScanType 3 -File "$scanDir\npp_installer.exe" 
+          #startTime = Get-Date
+          & $mpcmd -Scan -ScanType 3 -File "$scanDir\npp_installer.exe" -DisableRemediation -SignatureUpdate -mmpc
+          $endTime = Get-Date
+          $scanResult = $LASTEXITCODE
+
+          # Add details to the logs
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan started: $startTime"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "File scanned: $scanDir\npp_installer.exe"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Defender version: $defenderVersion"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan ended: $endTime"
+          Add-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log" "Scan result: $scanResult"
+
 
       - name: show defender logs
         shell: powershell
         run: |
-          Get-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log"
+          $logContent = Get-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log"
+          Write-Output $logContent
 
+          # Output the Scan Result for visibility in Actions
+          Write-Output "Scan Result: $scanResult"
+
+          exit $scanResult
