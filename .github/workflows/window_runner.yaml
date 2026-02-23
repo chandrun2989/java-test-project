@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: download scanner
         run: |
-          curl.exe -L -o npp_installer.exe "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.5.7/npp.8.5.7.Installer.x64.exe"
+          curl.exe -L -o npp_installer.exe "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v6.6.4/npp.6.6.4.Installer.x64.exe"
           dir
         shell: powershell
       
