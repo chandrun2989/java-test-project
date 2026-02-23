@@ -54,7 +54,7 @@ jobs:
         shell: powershell
         run: |
           $logContent = Get-Content "C:\Users\runneradmin\AppData\Local\Temp\MpCmdRun.log"
-          # Write-Output $logContent
+          Write-Output $logContent
 
           # Output the Scan Result for visibility in Actions
           Write-Output "Scan Result: $scanResult"
